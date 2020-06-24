@@ -2,7 +2,6 @@
 
 namespace Rhuett\Csvie\Commands;
 
-use Illuminate\Support\Str;
 use Illuminate\Console\GeneratorCommand;
 
 class CleanerMakeCommand extends GeneratorCommand
