@@ -7,7 +7,7 @@ return [
      * 
      * Default: '\Services\CsvCleaner'
      */
-    'cleaner_dir'              => '\Services\CsvCleaner',
+    'cleaner_dir'              => '\Services\CsvCleaners',
     
     /**
      * The Laravel disk where uploaded files are stored. This will also be where chunked files are stored.
