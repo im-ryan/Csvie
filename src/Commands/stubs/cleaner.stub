@@ -2,7 +2,7 @@
  
 namespace DummyNamespace;
 
-use Rhuett\csvie\AbstractCsvieCleaner;
+use Rhuett\Csvie\AbstractCsvieCleaner;
 
 class DummyClass extends AbstractCsvieCleaner
 {
