@@ -2,6 +2,7 @@
 
 namespace Rhuett\Csvie\Commands;
 
+use Illuminate\Support\Str;
 use Illuminate\Console\GeneratorCommand;
 
 class CleanerMakeCommand extends GeneratorCommand
@@ -26,7 +27,7 @@ class CleanerMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $type = 'Abstract';
+    protected $type = 'CSV Cleaner';
 
     /**
      * Get the stub file for the generator.
