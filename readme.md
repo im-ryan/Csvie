@@ -46,7 +46,14 @@ $ php artisan config:cache
 public function store(Request $request)
 {
     $csvie = new csvie; // Create new csvie instance with default configuration
-    $cleaner = new ModelCleaner('ID', 'model_id', new Model); // Initiate custom cleaner based on AbstractCsvieCleaner
+    $modelInstance = new Model;
+
+    // Initiate custom cleaner based on AbstractCsvieCleaner
+    $cleaner = new ModelCleaner(
+        'ID',                   // Column ID to match
+        'model_id',             // Model ID to verify against column ID
+        $modelInstance          // Model instance
+    );
 
     // Store uploaded file (moving from temp directory into permanent storage)
     $fileName = $request->file->store('/', 'uploads');
@@ -70,7 +77,7 @@ public function store(Request $request)
 
         // ...import file
         if($fileCleaned) {
-            $isDataImported = $csvie->importCSV($chunk, new Student);
+            $isDataImported = $csvie->importCSV($chunk, $modelInstance);
         }
 
     }
