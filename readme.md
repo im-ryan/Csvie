@@ -89,7 +89,7 @@ Simply run:
 $ php artisan make:cleaner ModelName
 ```
 
-...and you should get a new file that looks like the one below in the App\Services\CsvCleaners directory. Note that that the extra comments displayed here will not be included in newly generated files.
+...and you should get a new file that looks like the one below in the App\Services\CsvCleaners directory. Note that the extra comments displayed here will not be included in newly generated files.
 
 ```php
 <?php
