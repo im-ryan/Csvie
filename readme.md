@@ -17,7 +17,7 @@ Via Composer:
 
 ``` bash
 $ composer require rhuett/csvie
-$ artisan vendor:publish rhuett/csvie
+$ artisan vendor:publish --provider="Rhuett\Csvie\CsvieServiceProvider"
 ```
 
 Make sure to add the following line to your app/config/database.php file:
