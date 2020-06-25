@@ -1,10 +1,5 @@
 # Csvie
 
-[![Latest Version on Packagist][ico-version]][link-packagist]
-[![Total Downloads][ico-downloads]][link-downloads]
-[![Build Status][ico-travis]][link-travis]
-[![StyleCI][ico-styleci]][link-styleci]
-
 Csvie is a simple CSV file parser made for Laravel. Csvie is based on LeagueCSV, and can quickly import data to, and export data from, a MySQL database. It also gives you a handy abstract class for quickly sanitizing and scrubbing your CSV files prior to insertion.
 
 ## How it works
