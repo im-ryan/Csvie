@@ -189,7 +189,7 @@ class Csvie
     {
         $disk = !is_null($disk) ? $disk : $this->storageDisk;
         $storage = Storage::disk($disk);
-        $currPath = $this->getStorageDiskPath($storage);
+        $currPath = self::getStorageDiskPath($storage);
         $dir = !is_null($path) ? pathinfo($path)['filename'] . '/' : null;
         $name = is_null($filename) ? $filename : $filename . '_';
         
@@ -237,7 +237,7 @@ class Csvie
         $tables = DB::connection()->getDoctrineSchemaManager()->listTableNames();
         $disk = is_null($disk) ? $this->storageDisk : $disk;
         $filepath = is_null($filepath) ? $filepath : $filepath . '/';
-        $filename = $this->getStorageDiskPath($disk) . $filepath . $this->generateUniqueFileName('.zip');
+        $filename = self::getStorageDiskPath($disk) . $filepath . $this->generateUniqueFileName('.zip');
         $scrapFiles = array();
 
         // Make sure we can open the zip
@@ -391,7 +391,7 @@ class Csvie
      * @param  \Illuminate\Filesystem\FilesystemAdapter|string $storage
      * @return string|null
      */
-    public function getStorageDiskPath($storage)
+    public static function getStorageDiskPath($storage)
     {
         if(is_null($storage)) {
             return null;
@@ -418,7 +418,7 @@ class Csvie
             $this->setClassVars($options);
         }
 
-        $filePath = $this->getStorageDiskPath($this->storageDisk) . $filePath;
+        $filePath = self::getStorageDiskPath($this->storageDisk) . $filePath;
         $table = (gettype($model) == 'string') ? $model : $model->getTable();
         $fileCharSet = $this->fileCharSet;
         $fileEnclosedBy = $this->fileEnclosedBy;
@@ -459,7 +459,7 @@ class Csvie
     public function readCsvFile(string $filePath, string $disk = null): array
     {
         $disk = is_null($disk) ? $this->storageDisk : $disk;
-        $csv = Reader::createFromPath($this->getStorageDiskPath($disk) . $filePath, 'r');
+        $csv = Reader::createFromPath(self::getStorageDiskPath($disk) . $filePath, 'r');
         $headers = $this->generateUniqueHeaders($csv->fetchOne());
         $records = (new Statement())->offset(1)->process($csv)->getRecords($headers);
         $content = array();
@@ -539,7 +539,7 @@ class Csvie
     {
         $disk = is_null($disk) ? $this->storageDisk : $disk;
         $storage = Storage::disk($disk);
-        $absPath = $this->getStorageDiskPath($disk) . $filePath;
+        $absPath = self::getStorageDiskPath($disk) . $filePath;
 
         if(!$storage->exists($filePath) || !array_key_exists(0, $content)) {
             return false;
