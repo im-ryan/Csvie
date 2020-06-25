@@ -17,7 +17,7 @@ Via Composer:
 
 ``` bash
 $ composer require rhuett/csvie
-$ artisan vendor:publish --provider="Rhuett\Csvie\CsvieServiceProvider"
+$ php artisan vendor:publish --provider="Rhuett\Csvie\CsvieServiceProvider"
 ```
 
 Make sure to add the following line to your app/config/database.php file:
@@ -32,7 +32,11 @@ Make sure to add the following line to your app/config/database.php file:
     ]) : [],
 ],
 ```
+Once you have finished these configuration changes, dont forget to run:
 
+``` bash
+$ php artisan config:cache
+```
 
 ## Usage
 
