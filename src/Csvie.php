@@ -454,7 +454,7 @@ class Csvie
      *
      * @param  string $pathToFile
      * @param  string $downloadName = null
-     * @return
+     * @return void
      */
     public function makePathDownloadable(string $pathToFile, string $downloadName = null)
     {
