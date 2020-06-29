@@ -10,7 +10,7 @@ Csvie is meant to quickly load CSV files with more than a few thousand rows of d
 1. You upload the CSV files onto your server.
 2. Use csvie to chunk the files into smaller pieces. Chunking will be done by rows of data, instead of file globs.
 3. Write a custom CSV scrubber to clean data from the chunked files, then overwrite these files on the server.
-   1. Note that you do not have to use the included scrubber. You are free to write your own for even quicker validation checks.
+   1. Note that you do not have to use the included CsvieCleaner implementation. You are free to write your own using the Rhuett\Csvie\Contracts\CsvieCleaner interface.
 4. Directly load the clean files into your MySQL database directly using the [Load Data statement](https://dev.mysql.com/doc/refman/8.0/en/load-data.html).
 
 ## Installation
@@ -34,7 +34,7 @@ Make sure to add the following line to your app/config/database.php file:
     ]) : [],
 ],
 ```
-Once you have finished these configuration changes, dont forget to run:
+Once you have finished these configuration changes, don't forget to run:
 
 ``` bash
 $ php artisan config:cache
@@ -51,6 +51,7 @@ public function store(Request $request)
     $modelInstance = new Model;
 
     // Initiate custom cleaner based on AbstractCsvieCleaner
+    // Note: You can pass an array for the column and model IDs if you need to verify against multiple columns instead of one unique identifier
     $cleaner = new ModelCleaner(
         'ID',                   // Column ID to match
         'model_id',             // Model ID to verify against column ID
@@ -94,12 +95,12 @@ public function store(Request $request)
 }
 ```
 
-### Making your own CSV cleaner:
+### Making your own Csvie scrubber:
 
 Simply run:
 
 ``` bash
-$ php artisan make:cleaner ModelName
+$ php artisan make:cleaner ModelNameCleaner
 ```
 
 ...and you should get a new file that looks like the one below in the App\Services\CsvCleaners directory. Note that the extra comments displayed here will not be included in newly generated files.
@@ -122,7 +123,7 @@ class ModelCleaner extends AbstractCsvieCleaner
      * @param  \Illuminate\Support\Carbon $date        - The current date used for timestamps.
      * @return array|null
      */
-    protected function scrubber(array $rowData, $foundModels, array $newModel, \Illuminate\Support\Carbon $date)
+    abstract protected function scrubber(array $rowData, $foundModels, array $newModel, \Illuminate\Support\Carbon $date)
     {
         // Run checks on $rowData here. Validate, cleanse or completely change!
             // Use parent::updateValue() if you have many possible ways to update a single value within $rowData. Check the function for more information.
@@ -135,6 +136,7 @@ class ModelCleaner extends AbstractCsvieCleaner
     }
 }
 ```
+
 Note: If you would like to change the CsvCleaner directory, you can edit the csvie config file in your app's config directory.
 
 Don't forget to add the cleaners directory to your composer.json file (if needed):
@@ -151,6 +153,38 @@ Don't forget to add the cleaners directory to your composer.json file (if needed
 ...
 ```
 
+### Making your own CSV cleaner:
+
+If you want a completely custom CSV Cleaner, then you can make your own implementation based on the Rhuett\Csvie\Contracts\CsvieCleaner contract like so:
+
+
+```php
+use Rhuett\Csvie\Contracts\CsvieCleaner as CsvieCleanerContract;
+use Rhuett\Csvie\Traits\CsvieHelpers;
+
+/**
+ * Class MyCsvieCleaner.
+ * 
+ * An abstract CsvieCleaner implementation using a custom scrubbing technique based on your needs.
+ *
+ * @package namespace App\Services\Cleaners;
+ */
+abstract class MyCsvieCleaner implements CsvieCleanerContract
+{
+    use CsvieHelpers;   // Not needed, review trait to see if it will help you.
+
+    /**
+     * Cleans the data within a CSV record to match what's expected by the database.
+     * 
+     * @param  \Illuminate\Support\Collection $data
+     * @return \Illuminate\Support\Collection
+     */
+    public function scrub(\Illuminate\Support\Collection $data): \Illuminate\Support\Collection
+    {
+        // Clean all the data
+    }
+}
+```
 
 ## Change log
 
@@ -180,15 +214,6 @@ If you discover any security related issues, please email im.ryan@protonmail.com
 
 MPL-2.0. Please see the [license file](license.md) for more information.
 
-[ico-version]: https://img.shields.io/packagist/v/rhuett/csvie.svg?style=flat-square
-[ico-downloads]: https://img.shields.io/packagist/dt/rhuett/csvie.svg?style=flat-square
-[ico-travis]: https://img.shields.io/travis/rhuett/csvie/master.svg?style=flat-square
-[ico-styleci]: https://styleci.io/repos/12345678/shield
-
-[link-packagist]: https://packagist.org/packages/rhuett/csvie
-[link-downloads]: https://packagist.org/packages/rhuett/csvie
-[link-travis]: https://travis-ci.org/rhuett/csvie
-[link-styleci]: https://styleci.io/repos/12345678
 [link-author]: https://github.com/im-ryan
 [link-leaguecsv]: https://github.com/thephpleague/csv
 [link-spatie]: https://github.com/spatie/laravel-collection-macros
