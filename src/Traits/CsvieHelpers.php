@@ -8,16 +8,14 @@ use Illuminate\Support\Facades\Storage;
 
 /**
  * Trait CsvieHelpers.
- * 
- * Contains miscellaneous helpful functions for Csvie.
  *
- * @package Rhuett\Csvie\Traits;
+ * Contains miscellaneous helpful functions for Csvie.
  */
 trait CsvieHelpers
 {
     /**
-     * Builds the key array needed for getHashKey(). 
-     * 
+     * Builds the key array needed for getHashKey().
+     *
      * @param  array $keys
      * @return array
      */
@@ -28,7 +26,7 @@ trait CsvieHelpers
 
     /**
      * Builds an empty array indexed with column values taken from the database.
-     * 
+     *
      * @param  mixed $modelInstance
      * @return array
      */
@@ -41,8 +39,8 @@ trait CsvieHelpers
     }
 
     /**
-     * Returns the list of table names within a given connection. 
-     * 
+     * Returns the list of table names within a given connection.
+     *
      * @param  string $connection = null
      * @return array
      */
@@ -55,17 +53,17 @@ trait CsvieHelpers
 
     /**
      * Returns null if the given storage is null, otherwise gets the system path for a given Filesystem Adapter instance, or the name of the storage disk.
-     * 
+     *
      * @param  \Illuminate\Filesystem\FilesystemAdapter|string $storage
      * @return string|null
      */
     public static function getStorageDiskPath($storage): ?string
     {
-        if(is_null($storage)) {
+        if (is_null($storage)) {
             return null;
         }
 
-        if(gettype($storage) == 'string') {
+        if (gettype($storage) == 'string') {
             $storage = Storage::disk($storage);
         }
 
@@ -74,10 +72,10 @@ trait CsvieHelpers
             ->getAdapter()
             ->getPathPrefix();
     }
-    
+
     /**
-     * Returns the list of column names for a given table. 
-     * 
+     * Returns the list of column names for a given table.
+     *
      * @param  string $table
      * @return array
      */
@@ -88,7 +86,7 @@ trait CsvieHelpers
 
     /**
      * If the given path has any missing directories, make them.
-     * 
+     *
      * @param  string $path
      * @param  bool   $skipLastDir = false
      * @return void
@@ -104,10 +102,10 @@ trait CsvieHelpers
         unset($dirs[0]);                    // skip initial dir, as it's empty due to explode()
 
         // Rebuild the path, verifying that all directories are created.
-        foreach($dirs as $folder) {
+        foreach ($dirs as $folder) {
             $dir .= "${folder}/";
-            
-            if(!is_dir($dir)) {
+
+            if (! is_dir($dir)) {
                 mkdir($dir);
             }
         }

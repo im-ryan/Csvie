@@ -7,20 +7,20 @@ use Rhuett\Csvie\AbstractCsvieCleaner;
 /**
  * Class DummyClass.
  *
- * @package namespace DummyNamespace;
+ * Description
  */
 class DummyClass extends AbstractCsvieCleaner
 {
     /**
      * Custom made function used to clean CSV data.
-     * 
+     *
      * @param  array                      $rowData     - The current row of data pulled from your CSV.
      * @param  mixed                      $foundModels - Matched model(s) based on your CSV, otherwise contains null.
      * @param  array                      $newModel    - An empty model indexed with appropriate keys based on your model.
      * @param  \Illuminate\Support\Carbon $date        - The current date used for timestamps.
      * @return array|null
      */
-    abstract protected function scrubber(array $rowData, $foundModels, array $newModel, \Illuminate\Support\Carbon $date);
+    abstract protected function scrubber(array $rowData, $foundModels, array $newModel, \Illuminate\Support\Carbon $date)
     {
         // 
     }

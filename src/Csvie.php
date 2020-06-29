@@ -13,126 +13,124 @@ use Rhuett\Csvie\Traits\CsvieHelpers;
 
 /**
  * Class Csvie.
- * 
- * Csvie is a simple CSV file parser made for Laravel. Csvie is based on LeagueCSV, and can quickly import data to, and export data from, a MySQL database.
  *
- * @package Rhuett\Csvie;
+ * Csvie is a simple CSV file parser made for Laravel. Csvie is based on LeagueCSV, and can quickly import data to, and export data from, a MySQL database.
  */
 class Csvie
 {
     use CsvieHelpers;
-    
+
     /**
      * The amount of CSV rows per chunked file (+1 for headers).
-     * 
+     *
      * @var int
      */
     protected $fileChunkSize;
 
     /**
      * The file character set.
-     * 
+     *
      * @var string
      */
     protected $fileCharSet;
 
     /**
      * Character that optionally encloses a field.
-     * 
+     *
      * @var string
      */
     protected $fileEnclosedBy;
 
     /**
      * Character that escapes a field.
-     * 
+     *
      * @var string
      */
     protected $fileEscapedBy;
 
     /**
      * The number of lines to ignore. Usually to ignore the header line.
-     * 
+     *
      * @var int
      */
     protected $fileIgnoredLines;
 
     /**
      * Character that marks the end of a line.
-     * 
+     *
      * @var string
      */
     protected $fileLinesTerminatedBy;
 
     /**
      * Character that marks the end of a field.
-     * 
+     *
      * @var string
      */
     protected $fileTerminatedBy;
 
     /**
      * Whether or not to provide Mac support when reading files.
-     * 
+     *
      * @var bool
      */
     protected $hasMacSupport;
 
     /**
      * The initial ini setting for auto_detect_line_endings.
-     * 
+     *
      * @var int
      */
     protected $iniInitialSetting;
 
     /**
      * The Laravel disk where uploaded files are stored. This will also be where chunked files are stored.
-     * 
+     *
      * @var string
      */
     protected $storageDisk;
 
     /**
      * Initialize csvie with the storage disk location and file chunk size.
-     * 
+     *
      * @param  array $options (see csvie config file for array keys)
      */
-    public function __construct(array $options = array())
+    public function __construct(array $options = [])
     {
         $this->setClassVars($options);
     }
 
     /**
      * Chunks one or more files in the specified disk. Assumes files have a header. Returns array of new file paths.
-     * 
+     *
      * @param  array $filePaths
      * @return array
      */
     public function chunkFiles(array $filePaths): array
     {
         $this->useMacSupportIfNeeded();
-        $newFilePaths = array();
+        $newFilePaths = [];
 
-        foreach($filePaths as $path) {
+        foreach ($filePaths as $path) {
 
             // Grab headers and make them unique
             $csvReader = Reader::createFromPath($path, 'r');
             $headers = $this->generateUniqueHeaders($csvReader->fetchOne());
             $headerStr = implode(',', $headers); // for later comparisons
-            
+
             // Grab the rest of the file content if the file is not empty
-            if(filesize($path) > 0) {
+            if (filesize($path) > 0) {
                 $stmt = (new Statement())
                     ->offset(1)
                     ->limit($this->fileChunkSize);
                 $count = 0;
                 $fileNotEmpty = true; // whether or not the current output file is empty after records have been inserted
 
-                while($fileNotEmpty) {
+                while ($fileNotEmpty) {
 
                     // Create new file
                     $info = pathinfo($path);
-                    $name = $info['dirname'] . '/' . $info['filename'] . '/';
+                    $name = $info['dirname'].'/'.$info['filename'].'/';
                     $newFile = $this->createNewFile($name);
                     $csvWriter = Writer::createFromFileObject($newFile);
                     $records = $stmt
@@ -140,18 +138,18 @@ class Csvie
                         ->getRecords($headers);
 
                     $dirs = explode('/', $newFile->getPath());
-                    $filePath = $dirs[count($dirs) - 1] . '/' . $newFile->getFilename();
+                    $filePath = $dirs[count($dirs) - 1].'/'.$newFile->getFilename();
 
                     // Fill file
                     $csvWriter->insertOne($headers);
                     $csvWriter->insertAll($records);
 
                     // Verify current file isn't empty
-                    $fileContent = str_replace('"', "", $csvWriter->getContent()); // remove quotes for string compare
-                    $fileNotEmpty = !(substr($fileContent, 0, strlen($fileContent) - 1) == $headerStr); // remove ending newline character
+                    $fileContent = str_replace('"', '', $csvWriter->getContent()); // remove quotes for string compare
+                    $fileNotEmpty = ! (substr($fileContent, 0, strlen($fileContent) - 1) == $headerStr); // remove ending newline character
 
                     // Get next chunk of content if needed, otherwise delete current file
-                    if($fileNotEmpty) {
+                    if ($fileNotEmpty) {
                         $count++;
                         $stmt = (new Statement())
                             ->offset($this->fileChunkSize * $count)
@@ -162,19 +160,18 @@ class Csvie
                         unlink($newFile->getPathname());
                         $fileNotEmpty = false;
                     }
-
                 } // end while
-
             } // end if
         } // end foreach
 
         $this->unsetMacSupportIfNeeded();
+
         return $newFilePaths;
     }
 
     /**
      * Attempts to clear the storage disk of any leftover files, returns true if successful.
-     * 
+     *
      * @return bool
      */
     public function clearStorageDisk(): bool
@@ -185,19 +182,19 @@ class Csvie
 
         try {
             $storage->delete($files);
-            foreach($dirs as $dir) {
+            foreach ($dirs as $dir) {
                 $storage->deleteDirectory($dir);
             }
-            
+
             return true;
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return false;
         }
     }
 
     /**
      * Creates a new file in a directory based on the file path.
-     * 
+     *
      * @param  string $filePath = null
      * @param  string $fileName = null
      * @return \SplFileObject
@@ -208,11 +205,11 @@ class Csvie
 
         // Make sure file path is absolute
         $filePath = (is_null($filePath) || substr($filePath, 0, 1) != '/')
-            ? $currPath . $filePath
+            ? $currPath.$filePath
             : $filePath;
 
         // Make sure path has a file name
-        if(is_null($fileName)) {
+        if (is_null($fileName)) {
             $filePath .= substr($filePath, -1) == '/'
                 ? $this->generateUniqueFileName()
                 : null;
@@ -222,13 +219,13 @@ class Csvie
 
         self::makePath($filePath, true);
         file_put_contents($filePath, null);
-        
+
         return new \SplFileObject($filePath, 'r+');
     }
 
     /**
      * Disables Mac support.
-     * 
+     *
      * @return void
      */
     public function disableMacSupport(): void
@@ -238,7 +235,7 @@ class Csvie
 
     /**
      * Enables Mac support.
-     * 
+     *
      * @return void
      */
     public function enableMacSupport(): void
@@ -248,28 +245,28 @@ class Csvie
 
     /**
      * Exports entire database, one table per CSV file adn returns the zipped file location.
-     * 
+     *
      * @param  array  $excludedTables = array()
      * @param  string $filepath       = null
      * @return string
      */
-    public function exportDatabaseToCSVs(array $excludedTables = array(), string $filepath = null): string
+    public function exportDatabaseToCSVs(array $excludedTables = [], string $filepath = null): string
     {
         $zip = new \ZipArchive();
         $tables = array_values(
             array_diff(self::getDbTableNames(), $excludedTables)
         );
-        $filepath = is_null($filepath) ? $filepath : $filepath . '/';
-        $filename = self::getStorageDiskPath($this->storageDisk) . $filepath . $this->generateUniqueFileName('.zip');
-        $scrapFiles = array();
+        $filepath = is_null($filepath) ? $filepath : $filepath.'/';
+        $filename = self::getStorageDiskPath($this->storageDisk).$filepath.$this->generateUniqueFileName('.zip');
+        $scrapFiles = [];
 
         // Make sure we can open the zip
-        if($zip->open($filename, \ZipArchive::CREATE) !== TRUE) {
+        if ($zip->open($filename, \ZipArchive::CREATE) !== true) {
             return 'Error: Unable to create zip file for database export.';
         }
 
         // Export all wanted database tables
-        foreach($tables as $table) {
+        foreach ($tables as $table) {
             $file = $this->exportModelToCSV($table, $filepath);
             $zip->addFile($file, basename($file));
             array_push($scrapFiles, $file);
@@ -277,7 +274,7 @@ class Csvie
         $zip->close(); // zip file written to memory, can now delete leftover files
 
         // Remove exported files
-        foreach($scrapFiles as $file) {
+        foreach ($scrapFiles as $file) {
             unlink($file);
         }
 
@@ -286,7 +283,7 @@ class Csvie
 
     /**
      * This function exports all data from a table to a specified file. Takes in a model or table name.
-     * 
+     *
      * @param  mixed  $model
      * @param  string $filePath = null
      * @param  string $disk     = null
@@ -300,14 +297,14 @@ class Csvie
         $file = $this->createNewFile($filePath, "${table}.csv");
 
         // $rows does not return an array of arrays, so we fix that here
-        $rows = array_map(function($row) {
-            return (array)$row;
+        $rows = array_map(function ($row) {
+            return (array) $row;
         }, $rows);
 
         $csv = Writer::createFromFileObject($file);
         $csv->insertOne($cols);
         $csv->insertAll($rows);
-        
+
         return $file->getPathname();
     }
 
@@ -324,53 +321,52 @@ class Csvie
         $columnHeaders = '(';
         $nullOverwrite = ' SET ';
 
-        foreach($columns as $key => $column) {
+        foreach ($columns as $key => $column) {
 
             // Generate MYSQL header data
-            $columnHeaders .= ($key === 0) ? 
-                '@' . $column :
-                ',@' . $column;
-            
-             // Generate null overwrite commands, assuming any data that is empty should be null.
-            $nullOverwrite .= $column . ' = nullif(@' . $column . ',\'\')';
-            $nullOverwrite .= ($key === $columnLength) ? ';' : ', ';
+            $columnHeaders .= ($key === 0) ?
+                '@'.$column :
+                ',@'.$column;
 
+            // Generate null overwrite commands, assuming any data that is empty should be null.
+            $nullOverwrite .= $column.' = nullif(@'.$column.',\'\')';
+            $nullOverwrite .= ($key === $columnLength) ? ';' : ', ';
         }
         $columnHeaders .= ')';
 
-        return $columnHeaders . $nullOverwrite;
+        return $columnHeaders.$nullOverwrite;
     }
 
     /**
      * Generates a random file name along with the file's extension.
-     * 
+     *
      * @param  string $extension = '.csv'
      * @return string
      */
     protected function generateUniqueFileName(string $extension = '.csv'): string
     {
-        return md5(Str::random(40) . time()) . $extension;
+        return md5(Str::random(40).time()).$extension;
     }
 
     /**
      * Takes in a list of CSV headers and appends numbers to the end if they're duplicates.
-     * 
+     *
      * @param  array $headers
      * @return array
      */
     protected function generateUniqueHeaders(array $headers): array
     {
-        $uniqueHeaders = array();
+        $uniqueHeaders = [];
 
-        foreach($headers as $header) {
+        foreach ($headers as $header) {
             $count = 0;
             $value = $original = trim($header);
-            
-            while(in_array($value, $uniqueHeaders)) {
-                $value = $original . '-' . ++$count;
+
+            while (in_array($value, $uniqueHeaders)) {
+                $value = $original.'-'.++$count;
             }
-    
-            $uniqueHeaders[] = $value; 
+
+            $uniqueHeaders[] = $value;
         }
 
         return $uniqueHeaders;
@@ -378,7 +374,7 @@ class Csvie
 
     /**
      * Gets the current file chunk size.
-     * 
+     *
      * @return int
      */
     public function getFileChunkSize(): int
@@ -388,7 +384,7 @@ class Csvie
 
     /**
      * Returns true if Mac support is enabled, false otherwise.
-     * 
+     *
      * @return bool
      */
     public function getHasMacSupport(): bool
@@ -398,7 +394,7 @@ class Csvie
 
     /**
      * Gets the current storage disk location.
-     * 
+     *
      * @return string
      */
     public function getStorageDisk(): string
@@ -408,19 +404,19 @@ class Csvie
 
     /**
      * Imports a CSV file into the database, using a model as a reference. Returns true if all records were successfully inserted.
-     * 
+     *
      * @param  string $filePath
      * @param  mixed  $model
      * @param  array  $options  = array() (see csvie config file for array keys)
      * @return bool
      */
-    public function importCSV(string $filePath, $model, array $options = array()): bool
+    public function importCSV(string $filePath, $model, array $options = []): bool
     {
-        if(!empty($options)) {
+        if (! empty($options)) {
             $this->setClassVars($options);
         }
 
-        $filePath = self::getStorageDiskPath($this->storageDisk) . $filePath;
+        $filePath = self::getStorageDiskPath($this->storageDisk).$filePath;
         $table = (gettype($model) == 'string') ? $model : $model->getTable();
         $fileCharSet = $this->fileCharSet;
         $fileEnclosedBy = $this->fileEnclosedBy;
@@ -443,57 +439,57 @@ class Csvie
                     ESCAPED BY '${fileEscapedBy}'
                 LINES
                     TERMINATED BY '${fileLinesTerminatedBy}'
-                IGNORE ${fileIgnoredLines} LINES " .
+                IGNORE ${fileIgnoredLines} LINES ".
                 $this->generateMysqlEmptyStringOverwrite($table);
-                
+
         $numRowsInserted = DB::connection()
             ->getPdo()
             ->exec($query);
-        
+
         return $numRowsOfData === $numRowsInserted;
     }
 
     /**
      * Makes a given file downloadable.
-     * 
+     *
      * @param  string $pathToFile
      * @param  string $downloadName = null
-     * @return 
+     * @return
      */
     public function makePathDownloadable(string $pathToFile, string $downloadName = null)
     {
         $baseName = pathinfo($pathToFile)['basename'];
         $mimeType = mime_content_type($pathToFile);
-        
+
         header("Content-Type: ${mimeType}; charset=UTF-8");
         header('Content-Description: File Transfer');
         header("Content-Disposition: attachment; filename=\"${baseName}\"");
-        
+
         $csv = Reader::createFromPath($pathToFile);
         $name = $downloadName ?? $baseName;
 
         $csv->output($name);
-        
+
         // https://csv.thephpleague.com/9.0/connections/output/
         // Note: If you just need to make the CSV downloadable, end your script with a call to
         //       exit just after the output method. You should not return the method returned value.
-        exit; 
+        exit;
     }
 
     /**
      * Reads all data from a CSV file and returns the contents in an indexed array.
-     * 
+     *
      * @param  string $filePath
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public function readCsvFile(string $filePath): \Illuminate\Support\Collection
     {
-        $csv = Reader::createFromPath(self::getStorageDiskPath($this->storageDisk) . $filePath, 'r');
+        $csv = Reader::createFromPath(self::getStorageDiskPath($this->storageDisk).$filePath, 'r');
         $headers = $this->generateUniqueHeaders($csv->fetchOne());
         $records = (new Statement())->offset(1)->process($csv)->getRecords($headers);
-        $content = array();
+        $content = [];
 
-        foreach($records as $record) {
+        foreach ($records as $record) {
             array_push($content, $record);
         }
 
@@ -502,7 +498,7 @@ class Csvie
 
     /**
      * Restores the database given the path to an export zip file.
-     * 
+     *
      * @param  string $zipFile
      * @return bool
      */
@@ -510,21 +506,21 @@ class Csvie
     {
         $zip = new \ZipArchive;
         $pathInfo = pathinfo($zipFile);
-        $path = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '/';
+        $path = $pathInfo['dirname'].'/'.$pathInfo['filename'].'/';
 
         // Extract all files, if we can open the zip file
-        if($zip->open($zipFile) === TRUE) {
+        if ($zip->open($zipFile) === true) {
             $this->makePath($path);
             $zip->extractTo($path);
             $zip->close();
 
             // Grab list of extracted files and import them
-            $resFiles = array_diff(scandir($path), array('..', '.'));
-            foreach($resFiles as $file) {
-                $successfulRestore = $this->restoreModel($path . $file);
+            $resFiles = array_diff(scandir($path), ['..', '.']);
+            foreach ($resFiles as $file) {
+                $successfulRestore = $this->restoreModel($path.$file);
 
                 // If there was an error, stop importing and return false
-                if(!$successfulRestore) {
+                if (! $successfulRestore) {
                     return false;
                 }
             }
@@ -537,7 +533,7 @@ class Csvie
 
     /**
      * Restores a certain model given the path to an export CSV file.
-     * 
+     *
      * @param  string $filePath
      * @return bool
      */
@@ -547,11 +543,12 @@ class Csvie
         $dirPath = $pathInfo['dirname'];
         $dirName = substr($dirPath, strrpos($dirPath, '/') + 1, strlen($dirPath));
         $table = $pathInfo['filename'];
-        
-        if(in_array($table, self::getDbTableNames())) {
+
+        if (in_array($table, self::getDbTableNames())) {
             DB::table($table)->truncate();
-    
-            $fileName = $dirName . '/' . $pathInfo['basename'];
+
+            $fileName = $dirName.'/'.$pathInfo['basename'];
+
             return $this->importCSV($fileName, $table);
         }
 
@@ -560,7 +557,7 @@ class Csvie
 
     /**
      * Saves a CSV file, returns true if file was saved successfully.
-     * 
+     *
      * @param  string $filePath
      * @param  array  $content
      * @param  string $disk     = null
@@ -569,9 +566,9 @@ class Csvie
     public function saveCsvFile(string $filePath, array $content): bool
     {
         $storage = Storage::disk($this->storageDisk);
-        $absPath = self::getStorageDiskPath($this->storageDisk) . $filePath;
+        $absPath = self::getStorageDiskPath($this->storageDisk).$filePath;
 
-        if(!$storage->exists($filePath) || !array_key_exists(0, $content)) {
+        if (! $storage->exists($filePath) || ! array_key_exists(0, $content)) {
             return false;
         }
 
@@ -590,13 +587,13 @@ class Csvie
 
     /**
      * Sets up the class variables given an array of options.
-     * 
+     *
      * @param  array $options (see csvie config file for array keys)
      * @return void
      */
     private function setClassVars(array $options): void
     {
-        if(empty($options)) {
+        if (empty($options)) {
             $this->fileCharSet = config('csvie.file_charset');
             $this->fileChunkSize = config('csvie.file_chunksize');
             $this->fileEnclosedBy = config('csvie.file_fields_enclosedby');
@@ -621,7 +618,7 @@ class Csvie
 
     /**
      * Set the current file chunk size.
-     * 
+     *
      * @param  int $fileChunkSize
      * @return void
      */
@@ -632,7 +629,7 @@ class Csvie
 
     /**
      * Set the current storage disk location.
-     * 
+     *
      * @param  string $storageDisk
      * @return void
      */
@@ -643,27 +640,27 @@ class Csvie
 
     /**
      * Stores files in chunks onto the local server.
-     * 
+     *
      * @return void
      */
     protected function useMacSupportIfNeeded(): void
     {
-        $this->iniInitialSetting = ini_get("auto_detect_line_endings");
+        $this->iniInitialSetting = ini_get('auto_detect_line_endings');
 
-        if($this->hasMacSupport && !$this->iniInitialSetting) {
-            ini_set("auto_detect_line_endings", '1');
+        if ($this->hasMacSupport && ! $this->iniInitialSetting) {
+            ini_set('auto_detect_line_endings', '1');
         }
     }
 
     /**
      * Reset Mac support if required.
-     * 
+     *
      * @return void
      */
     protected function unsetMacSupportIfNeeded(): void
     {
-        if($this->iniInitialSetting != ini_get("auto_detect_line_endings")) {
-            ini_set("auto_detect_line_endings", $this->iniInitialSetting);
+        if ($this->iniInitialSetting != ini_get('auto_detect_line_endings')) {
+            ini_set('auto_detect_line_endings', $this->iniInitialSetting);
         }
     }
 }

@@ -6,10 +6,8 @@ use Illuminate\Console\GeneratorCommand;
 
 /**
  * Class CleanerMakeCommand.
- * 
- * An artisan command for generating an AbstractCsvieCleaner class.
  *
- * @package Rhuett\Csvie\Commands;
+ * An artisan command for generating an AbstractCsvieCleaner class.
  */
 class CleanerMakeCommand extends GeneratorCommand
 {
@@ -42,7 +40,7 @@ class CleanerMakeCommand extends GeneratorCommand
      */
     protected function getStub()
     {
-        return __DIR__ . '/stubs/cleaner.stub';
+        return __DIR__.'/stubs/cleaner.stub';
     }
 
     /**
@@ -53,6 +51,6 @@ class CleanerMakeCommand extends GeneratorCommand
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace . config('csvie.cleaner_dir');
+        return $rootNamespace.config('csvie.cleaner_dir');
     }
 }

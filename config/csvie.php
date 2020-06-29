@@ -1,17 +1,17 @@
 <?php
 
 return [
-    
-    /**
+
+    /*
      * The directory where custom CSV cleaner classes are saved.
-     * 
+     *
      * Default: '\Services\CsvCleaner'
      */
     'cleaner_dir'              => '\Services\CsvCleaners',
-    
-    /**
+
+    /*
      * The Laravel disk where uploaded files are stored. This will also be where chunked files are stored.
-     * 
+     *
      * Default: 'public'
      */
     'storage_disk'             => 'public',
@@ -21,7 +21,7 @@ return [
     | MySQL File Import Options
     |--------------------------------------------------------------------------
     |
-    | The following options are used for the import process. Below are the option names, defaults, and a quick description of 
+    | The following options are used for the import process. Below are the option names, defaults, and a quick description of
     | what each option does.
     |
     | 'file_charset'              => 'utf8'     // The file character set.

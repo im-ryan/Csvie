@@ -6,8 +6,6 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * Class Csvie.
- *
- * @package Rhuett\Csvie\Facades;
  */
 class Csvie extends Facade
 {

@@ -6,10 +6,8 @@ use Illuminate\Support\ServiceProvider;
 
 /**
  * Class CsvieServiceProvider.
- * 
- * The provider class for Csvie. This class registers the package with Laravel, along with any services, commands, publishable files, etc.
  *
- * @package Rhuett\Csvie;
+ * The provider class for Csvie. This class registers the package with Laravel, along with any services, commands, publishable files, etc.
  */
 class CsvieServiceProvider extends ServiceProvider
 {
@@ -50,7 +48,7 @@ class CsvieServiceProvider extends ServiceProvider
     {
         return ['csvie'];
     }
-    
+
     /**
      * Console-specific booting.
      *
@@ -65,7 +63,7 @@ class CsvieServiceProvider extends ServiceProvider
 
         // Registering package commands.
         $this->commands([
-            Commands\CleanerMakeCommand::class
+            Commands\CleanerMakeCommand::class,
         ]);
     }
 }
