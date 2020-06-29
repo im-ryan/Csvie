@@ -71,9 +71,7 @@ public function store(Request $request)
     foreach($chunkedFiles as $chunk) {
 
         // ...clean data within chunked file
-        $cleanData = $cleaner->scrub(
-            collect($csvie->readCsvFile($chunk))
-        );
+        $cleanData = $cleaner->scrub($csvie->readCsvFile($chunk));
 
         // ...overwrite the changes
         $fileCleaned = $csvie->saveCsvFile($chunk, $cleanData->ToArray());
