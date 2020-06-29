@@ -47,7 +47,7 @@ $ php artisan config:cache
 ``` php
 public function store(Request $request)
 {
-    $csvie = new csvie; // Create new csvie instance with default configuration
+    $csvie = new Csvie; // Create new Csvie instance with default configuration
     $modelInstance = new Model;
 
     // Initiate custom cleaner based on AbstractCsvieCleaner
@@ -108,9 +108,9 @@ $ php artisan make:cleaner ModelNameCleaner
 ```php
 <?php
  
-namespace Services\CsvCleaners;
+namespace App\Services\CsvCleaners;
 
-use Rhuett\csvie\AbstractCsvieCleaner;
+use Rhuett\Csvie\AbstractCsvieCleaner;
 
 class ModelCleaner extends AbstractCsvieCleaner
 {
