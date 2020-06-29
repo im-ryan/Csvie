@@ -4,6 +4,13 @@ namespace Rhuett\Csvie;
 
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * Class CsvieServiceProvider.
+ * 
+ * The provider class for Csvie. This class registers the package with Laravel, along with any services, commands, publishable files, etc.
+ *
+ * @package Rhuett\Csvie;
+ */
 class CsvieServiceProvider extends ServiceProvider
 {
     /**

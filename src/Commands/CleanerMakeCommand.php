@@ -4,6 +4,13 @@ namespace Rhuett\Csvie\Commands;
 
 use Illuminate\Console\GeneratorCommand;
 
+/**
+ * Class CleanerMakeCommand.
+ * 
+ * An artisan command for generating an AbstractCsvieCleaner class.
+ *
+ * @package Rhuett\Csvie\Commands;
+ */
 class CleanerMakeCommand extends GeneratorCommand
 {
     /**
