@@ -2,6 +2,8 @@
 
 Csvie is a simple CSV file parser made for Laravel. Csvie is based on LeagueCSV, and can quickly import data to, and export data from, a MySQL database. It also gives you a handy abstract class for quickly sanitizing and scrubbing your CSV files prior to insertion.
 
+**WARNING:** Csvie is still under active development. It is not recommended you use this plugin until it is released, as breaking changes may be introduced in the future.
+
 ## How it works
 
 Csvie is meant to quickly load CSV files with more than a few thousand rows of data into a MySQL database. The idea behind how this works is simple:
