@@ -11,6 +11,13 @@ use League\Csv\Statement;
 use League\Csv\Writer;
 use Rhuett\Csvie\Traits\CsvieHelpers;
 
+/**
+ * Class Csvie.
+ * 
+ * Csvie is a simple CSV file parser made for Laravel. Csvie is based on LeagueCSV, and can quickly import data to, and export data from, a MySQL database.
+ *
+ * @package Rhuett\Csvie;
+ */
 class Csvie
 {
     use CsvieHelpers;
@@ -477,9 +484,9 @@ class Csvie
      * Reads all data from a CSV file and returns the contents in an indexed array.
      * 
      * @param  string $filePath
-     * @return array
+     * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function readCsvFile(string $filePath): array
+    public function readCsvFile(string $filePath): \Illuminate\Support\Collection
     {
         $csv = Reader::createFromPath(self::getStorageDiskPath($this->storageDisk) . $filePath, 'r');
         $headers = $this->generateUniqueHeaders($csv->fetchOne());
@@ -490,7 +497,7 @@ class Csvie
             array_push($content, $record);
         }
 
-        return $content;
+        return collect($content);
     }
 
     /**
