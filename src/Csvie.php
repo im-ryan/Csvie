@@ -172,13 +172,14 @@ class Csvie
     /**
      * Attempts to clear the storage disk of any leftover files, returns true if successful.
      *
+     * @param  string $dir = null
      * @return bool
      */
-    public function clearStorageDisk(): bool
+    public function clearStorageDisk(string $dir = null): bool
     {
         $storage = Storage::disk($this->storageDisk);
-        $files = $storage->allFiles();
-        $dirs = $storage->allDirectories();
+        $files = $storage->allFiles($dir);
+        $dirs = $storage->allDirectories($dir);
 
         try {
             $storage->delete($files);
