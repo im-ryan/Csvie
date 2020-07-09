@@ -5,6 +5,8 @@ namespace Rhuett\Csvie\Traits;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use League\Csv\Reader;
 
 /**
  * Trait CsvieHelpers.
@@ -14,12 +16,12 @@ use Illuminate\Support\Facades\Storage;
 trait CsvieHelpers
 {
     /**
-     * Builds the key array needed for getHashKey().
+     * Builds an empty indexed array from an array of keys.
      *
      * @param  array $keys
      * @return array
      */
-    private static function buildEmptyArray(array $keys): array
+    public static function buildEmptyArray(array $keys): array
     {
         return array_fill_keys($keys, null);
     }
@@ -30,12 +32,23 @@ trait CsvieHelpers
      * @param  mixed $modelInstance
      * @return array
      */
-    private static function createEmptyModelArray($modelInstance): array
+    public static function createEmptyModelArray($modelInstance): array
     {
         $keys = self::getTableCols($modelInstance->getTable());
         $values = array_fill_keys($keys, null);
 
         return array_combine($keys, $values);
+    }
+
+    /**
+     * Generates a random file name along with the file's extension.
+     *
+     * @param  string $extension = '.csv'
+     * @return string
+     */
+    public static function generateUniqueFileName(string $extension = '.csv'): string
+    {
+        return md5(Str::random(40).time()).$extension;
     }
 
     /**
@@ -82,6 +95,33 @@ trait CsvieHelpers
     public static function getTableCols(string $table): array
     {
         return Schema::getColumnListing($table);
+    }
+
+    /**
+     * Makes a given CSV file downloadable.
+     *
+     * @param  string $pathToFile
+     * @param  string $downloadName = null
+     * @return void
+     */
+    public static function makePathDownloadable(string $pathToFile, string $downloadName = null)
+    {
+        $baseName = pathinfo($pathToFile)['basename'];
+        $mimeType = mime_content_type($pathToFile);
+
+        header("Content-Type: ${mimeType}; charset=UTF-8");
+        header('Content-Description: File Transfer');
+        header("Content-Disposition: attachment; filename=\"${baseName}\"");
+
+        $csv = Reader::createFromPath($pathToFile);
+        $name = $downloadName ?? $baseName;
+
+        $csv->output($name);
+
+        // https://csv.thephpleague.com/9.0/connections/output/
+        // Note: If you just need to make the CSV downloadable, end your script with a call to
+        //       exit just after the output method. You should not return the method returned value.
+        exit;
     }
 
     /**

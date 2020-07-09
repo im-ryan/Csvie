@@ -5,7 +5,6 @@ namespace Rhuett\Csvie;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use League\Csv\Reader;
 use League\Csv\Statement;
 use League\Csv\Writer;
@@ -97,7 +96,41 @@ class Csvie
      */
     public function __construct(array $options = [])
     {
-        $this->setClassVars($options);
+        $this->fileCharSet = array_key_exists('file_charset', $options)
+            ? $options['file_charset']
+            : config('csvie.file_charset');
+            
+        $this->fileChunkSize = array_key_exists('file_chunksize', $options)
+            ? $options['file_chunksize']
+            : config('csvie.file_chunksize');
+            
+        $this->fileEnclosedBy = array_key_exists('file_fields_enclosedby', $options)
+            ? $options['file_fields_enclosedby']
+            : config('csvie.file_fields_enclosedby');
+            
+        $this->fileEscapedBy = array_key_exists('file_fields_escapedby', $options)
+            ? $options['file_fields_escapedby']
+            : config('csvie.file_fields_escapedby');
+            
+        $this->fileIgnoredLines = array_key_exists('file_lines_ignored', $options)
+            ? $options['file_lines_ignored']
+            : config('csvie.file_lines_ignored');
+            
+        $this->fileLinesTerminatedBy = array_key_exists('file_lines_terminatedby', $options)
+            ? $options['file_lines_terminatedby']
+            : config('csvie.file_lines_terminatedby');
+            
+        $this->fileTerminatedBy = array_key_exists('file_fields_terminatedby', $options)
+            ? $options['file_fields_terminatedby']
+            : config('csvie.file_fields_terminatedby');
+            
+        $this->hasMacSupport = array_key_exists('file_macsupport', $options)
+            ? $options['file_macsupport']
+            : config('csvie.file_macsupport');
+            
+        $this->storageDisk = array_key_exists('disk', $options)
+            ? $options['storage_disk']
+            : config('csvie.storage_disk');
     }
 
     /**
@@ -212,7 +245,7 @@ class Csvie
         // Make sure path has a file name
         if (is_null($fileName)) {
             $filePath .= substr($filePath, -1) == '/'
-                ? $this->generateUniqueFileName()
+                ? self::generateUniqueFileName()
                 : null;
         } else {
             $filePath .= $fileName;
@@ -258,7 +291,7 @@ class Csvie
             array_diff(self::getDbTableNames(), $excludedTables)
         );
         $filepath = is_null($filepath) ? $filepath : $filepath.'/';
-        $filename = self::getStorageDiskPath($this->storageDisk).$filepath.$this->generateUniqueFileName('.zip');
+        $filename = self::getStorageDiskPath($this->storageDisk).$filepath.self::generateUniqueFileName('.zip');
         $scrapFiles = [];
 
         // Make sure we can open the zip
@@ -339,17 +372,6 @@ class Csvie
     }
 
     /**
-     * Generates a random file name along with the file's extension.
-     *
-     * @param  string $extension = '.csv'
-     * @return string
-     */
-    protected function generateUniqueFileName(string $extension = '.csv'): string
-    {
-        return md5(Str::random(40).time()).$extension;
-    }
-
-    /**
      * Takes in a list of CSV headers and appends numbers to the end if they're duplicates.
      *
      * @param  array $headers
@@ -408,17 +430,14 @@ class Csvie
      *
      * @param  string $filePath
      * @param  mixed  $model
-     * @param  array  $options  = array() (see csvie config file for array keys)
      * @return bool
      */
-    public function importCSV(string $filePath, $model, array $options = []): bool
+    public function importCSV(string $filePath, $model): bool
     {
-        if (! empty($options)) {
-            $this->setClassVars($options);
-        }
-
         $filePath = self::getStorageDiskPath($this->storageDisk).$filePath;
-        $table = (gettype($model) == 'string') ? $model : $model->getTable();
+        $table = (gettype($model) == 'string')
+            ? $model
+            : $model->getTable();
         $fileCharSet = $this->fileCharSet;
         $fileEnclosedBy = $this->fileEnclosedBy;
         $fileEscapedBy = $this->fileEscapedBy;
@@ -448,33 +467,6 @@ class Csvie
             ->exec($query);
 
         return $numRowsOfData === $numRowsInserted;
-    }
-
-    /**
-     * Makes a given file downloadable.
-     *
-     * @param  string $pathToFile
-     * @param  string $downloadName = null
-     * @return void
-     */
-    public function makePathDownloadable(string $pathToFile, string $downloadName = null)
-    {
-        $baseName = pathinfo($pathToFile)['basename'];
-        $mimeType = mime_content_type($pathToFile);
-
-        header("Content-Type: ${mimeType}; charset=UTF-8");
-        header('Content-Description: File Transfer');
-        header("Content-Disposition: attachment; filename=\"${baseName}\"");
-
-        $csv = Reader::createFromPath($pathToFile);
-        $name = $downloadName ?? $baseName;
-
-        $csv->output($name);
-
-        // https://csv.thephpleague.com/9.0/connections/output/
-        // Note: If you just need to make the CSV downloadable, end your script with a call to
-        //       exit just after the output method. You should not return the method returned value.
-        exit;
     }
 
     /**
@@ -584,37 +576,6 @@ class Csvie
         $csvWriter->insertAll($content);
 
         return true;
-    }
-
-    /**
-     * Sets up the class variables given an array of options.
-     *
-     * @param  array $options (see csvie config file for array keys)
-     * @return void
-     */
-    private function setClassVars(array $options): void
-    {
-        if (empty($options)) {
-            $this->fileCharSet = config('csvie.file_charset');
-            $this->fileChunkSize = config('csvie.file_chunksize');
-            $this->fileEnclosedBy = config('csvie.file_fields_enclosedby');
-            $this->fileEscapedBy = config('csvie.file_fields_escapedby');
-            $this->fileIgnoredLines = config('csvie.file_lines_ignored');
-            $this->fileLinesTerminatedBy = config('csvie.file_lines_terminatedby');
-            $this->fileTerminatedBy = config('csvie.file_fields_terminatedby');
-            $this->hasMacSupport = config('csvie.file_macsupport');
-            $this->storageDisk = config('csvie.storage_disk');
-        } else {
-            $this->fileCharSet = array_key_exists('file_charset', $options) ? $options['file_charset'] : config('csvie.file_charset');
-            $this->fileChunkSize = array_key_exists('file_chunksize', $options) ? $options['file_chunksize'] : config('csvie.file_chunksize');
-            $this->fileEnclosedBy = array_key_exists('file_fields_enclosedby', $options) ? $options['file_fields_enclosedby'] : config('csvie.file_fields_enclosedby');
-            $this->fileEscapedBy = array_key_exists('file_fields_escapedby', $options) ? $options['file_fields_escapedby'] : config('csvie.file_fields_escapedby');
-            $this->fileIgnoredLines = array_key_exists('file_lines_ignored', $options) ? $options['file_lines_ignored'] : config('csvie.file_lines_ignored');
-            $this->fileLinesTerminatedBy = array_key_exists('file_lines_terminatedby', $options) ? $options['file_lines_terminatedby'] : config('csvie.file_lines_terminatedby');
-            $this->fileTerminatedBy = array_key_exists('file_fields_terminatedby', $options) ? $options['file_fields_terminatedby'] : config('csvie.file_fields_terminatedby');
-            $this->hasMacSupport = array_key_exists('file_macsupport', $options) ? $options['file_macsupport'] : config('csvie.file_macsupport');
-            $this->storageDisk = array_key_exists('disk', $options) ? $options['storage_disk'] : config('csvie.storage_disk');
-        }
     }
 
     /**
