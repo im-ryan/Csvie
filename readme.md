@@ -47,14 +47,14 @@ $ php artisan config:cache
 ``` php
 public function store(Request $request)
 {
-    $csvie = new Csvie; // Create new Csvie instance with default configuration
-    $modelInstance = new Model;
+    $csvie = new Csvie;         // Create new Csvie instance with default configuration
+    $modelInstance = new Model; // Create a new model instance
 
     // Initiate custom cleaner based on AbstractCsvieCleaner
-    // Note: You can pass an array for the column and model IDs if you need to verify against multiple columns instead of one unique identifier
+    // Note: You can pass an array for both column and model UIDs if you need to verify against multiple columns
     $cleaner = new ModelCleaner(
-        'ID',                   // Column ID to match
-        'model_id',             // Model ID to verify against column ID
+        'ID',                   // Column name from CSV file to match
+        'model_id',             // Model ID to verify against column name
         $modelInstance          // Model instance
     );
 
@@ -66,24 +66,20 @@ public function store(Request $request)
         $csvie->getStorageDiskPath('uploads') . $fileName
     ]);
 
-
-    // For each chunked file...
+    // For each chunked file:
     foreach($chunkedFiles as $chunk) {
+        $chunkData = $csvie->readCsvFile($chunk);               // read data from the file chunk,
+        $cleanData = $cleaner->scrub($chunkData);               // clean the data,
+        $fileCleaned = $csvie->saveCsvFile($chunk, $cleanData); // overwrite changes to the file chunk,
 
-        // ...clean data within chunked file
-        $cleanData = $cleaner->scrub($csvie->readCsvFile($chunk));
-
-        // ...overwrite the changes
-        $fileCleaned = $csvie->saveCsvFile($chunk, $cleanData->ToArray());
-
-        // ...import file
+        // then import the file chunk
         if($fileCleaned) {
             $isDataImported = $csvie->importCSV($chunk, $modelInstance);
         }
 
     }
 
-    // Clear out leftover uploaded file and chunked files
+    // Clear out leftover uploaded file along with its chunks
     $csvie->clearStorageDisk();
 
     // Return view with newly inserted/updated models
@@ -108,7 +104,7 @@ $ php artisan make:cleaner ModelNameCleaner
  
 namespace App\Services\CsvCleaners;
 
-use Rhuett\Csvie\AbstractCsvieCleaner;
+use Rhuett\Csvie\Cleaners\AbstractCsvieCleaner;
 
 class ModelCleaner extends AbstractCsvieCleaner
 {
