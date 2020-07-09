@@ -551,17 +551,17 @@ class Csvie
     /**
      * Saves a CSV file, returns true if file was saved successfully.
      *
-     * @param  string $filePath
-     * @param  array  $content
-     * @param  string $disk     = null
+     * @param  string                          $filePath
+     * @param  \Illuminate\Support\Collection  $content
+     * @param  string                          $disk     = null
      * @return bool
      */
-    public function saveCsvFile(string $filePath, array $content): bool
+    public function saveCsvFile(string $filePath, \Illuminate\Support\Collection $content): bool
     {
         $storage = Storage::disk($this->storageDisk);
         $absPath = self::getStorageDiskPath($this->storageDisk).$filePath;
 
-        if (! $storage->exists($filePath) || ! array_key_exists(0, $content)) {
+        if (! $storage->exists($filePath) || $content->isEmpty()) {
             return false;
         }
 
@@ -573,7 +573,7 @@ class Csvie
         $headers = array_keys($content[0]);
 
         $csvWriter->insertOne($headers);
-        $csvWriter->insertAll($content);
+        $csvWriter->insertAll($content->all());
 
         return true;
     }
