@@ -2,7 +2,7 @@
  
 namespace DummyNamespace;
 
-use Rhuett\Csvie\AbstractCsvieCleaner;
+use Rhuett\Csvie\Cleaners\AbstractCsvieCleaner;
 
 /**
  * Class DummyClass.
@@ -20,7 +20,7 @@ class DummyClass extends AbstractCsvieCleaner
      * @param  \Illuminate\Support\Carbon $date        - The current date used for timestamps.
      * @return array|null
      */
-    abstract protected function scrubber(array $rowData, $foundModels, array $newModel, \Illuminate\Support\Carbon $date)
+    protected function scrubber(array $rowData, $foundModels, array $newModel, \Illuminate\Support\Carbon $date)
     {
         // 
     }
