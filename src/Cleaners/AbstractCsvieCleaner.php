@@ -63,11 +63,9 @@ abstract class AbstractCsvieCleaner implements CsvieCleanerContract
     private function getHashKey(array $row, array $keys)
     {
         // Turn the given array into a string with no separator
-        return implode('',
-
-            // Set the given array equal to only the UID/value pairs we care about
-            array_intersect_key($row, $keys)
-
+        return implode(
+            '',
+            array_intersect_key($row, $keys) // Set the given array equal to only the UID/value pairs we care about
         );
     }
 
@@ -81,7 +79,7 @@ abstract class AbstractCsvieCleaner implements CsvieCleanerContract
     {
         $csvUids = $this->csvUIDs;
         $modelUids = $this->modelUIDs;
-        $hash = $this->modelInstance;
+        $models = $this->modelInstance;
 
         // Loop through each given model UID
         for ($i = 0, $count = count($modelUids); $i < $count; $i++) {
@@ -92,18 +90,16 @@ abstract class AbstractCsvieCleaner implements CsvieCleanerContract
                 ->ToArray();
 
             // Add a whereIn clause to our query builder to search for the above values
-            $hash = $hash->whereIn($modelUids[$i], $allModelIds);
+            $models = $models->whereIn($modelUids[$i], $allModelIds);
         }
         $modelUids = self::buildEmptyArray($modelUids);
 
         // Search the database once, then build the new hash
-        $hash = $hash
+        return $models
             ->get()
             ->groupBy(function ($item) use ($modelUids) {
                 return $this->getHashKey($item->ToArray(), $modelUids);
             });
-
-        return $hash;
     }
 
     public function scrub(\Illuminate\Support\Collection $data): \Illuminate\Support\Collection
