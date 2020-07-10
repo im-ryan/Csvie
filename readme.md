@@ -8,9 +8,9 @@ Csvie is a simple CSV file parser made for Laravel. Csvie is based on LeagueCSV,
 
 Csvie is meant to quickly load CSV files with more than a few thousand rows of data into a MySQL database. The idea behind how this works is simple:
 1. You upload the CSV files onto your server.
-2. Use csvie to chunk the files into smaller pieces. Chunking will be done by rows of data, instead of file globs.
+2. Use Csvie to chunk the files into smaller pieces. Chunking will be done by rows of data, instead of file globs.
 3. Write a custom CSV scrubber to clean data from the chunked files, then overwrite these files on the server.
-   1. Note that you do not have to use the included CsvieCleaner implementation. You are free to write your own using the Rhuett\Csvie\Contracts\CsvieCleaner interface.
+   1. Note that you do not have to use the included AbstractCsvieCleaner implementation. You are free to write your own using the Rhuett\Csvie\Contracts\CsvieCleaner interface.
 4. Directly load the clean files into your MySQL database directly using the [Load Data statement](https://dev.mysql.com/doc/refman/8.0/en/load-data.html).
 
 ## Installation
