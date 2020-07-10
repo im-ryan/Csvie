@@ -136,13 +136,16 @@ class Csvie
     /**
      * Chunks one or more files in the specified disk. Assumes files have a header. Returns array of new file paths.
      *
-     * @param  array $filePaths
+     * @param  array|string $filePaths
      * @return array
      */
-    public function chunkFiles(array $filePaths): array
+    public function chunkFiles($filePaths): array
     {
         $this->useMacSupportIfNeeded();
         $newFilePaths = [];
+        $filePaths = is_array($filePaths)
+            ? $filePaths
+            : [$filePaths];
 
         foreach ($filePaths as $path) {
 
