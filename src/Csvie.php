@@ -552,20 +552,21 @@ class Csvie
     }
 
     /**
-     * Saves a CSV file, returns true if file was saved successfully.
+     * Saves a CSV file, creating a new file if the given file doesn't exist. Returns the saved file's path.
      *
      * @param  string                          $filePath
      * @param  \Illuminate\Support\Collection  $content
      * @param  string                          $disk     = null
-     * @return bool
+     * @return string
      */
-    public function saveCsvFile(string $filePath, \Illuminate\Support\Collection $content): bool
+    public function saveCsvFile(string $filePath, \Illuminate\Support\Collection $content): string
     {
         $storage = Storage::disk($this->storageDisk);
         $absPath = self::getStorageDiskPath($this->storageDisk).$filePath;
 
-        if (! $storage->exists($filePath) || $content->isEmpty()) {
-            return false;
+        if (! $storage->exists($filePath)) {
+            $newFile = $this->createNewFile($filePath);
+            $filePath = $newFile->getRealPath();
         }
 
         // Delete old file and create a new, empty file
@@ -573,12 +574,12 @@ class Csvie
         $storage->put($filePath, '');
 
         $csvWriter = Writer::createFromPath($absPath);
-        $headers = array_keys($content[0]);
+        $headers = array_keys($content->get(0));
 
         $csvWriter->insertOne($headers);
         $csvWriter->insertAll($content->all());
 
-        return true;
+        return $filePath;
     }
 
     /**
