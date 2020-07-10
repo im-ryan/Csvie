@@ -47,15 +47,15 @@ $ php artisan config:cache
 ``` php
 public function store(Request $request)
 {
-    $csvie = new Csvie;         // Create new Csvie instance with default configuration
-    $modelInstance = new Model; // Create a new model instance
+    $csvie = new Csvie;         // note: you can pass an array of config overrides if needed
+    $modelInstance = new Model;
 
     // Initiate custom cleaner based on AbstractCsvieCleaner
     // Note: You can pass an array for both column and model UIDs if you need to verify against multiple columns
     $cleaner = new ModelCleaner(
-        'ID',                   // Column name from CSV file to match
-        'model_id',             // Model ID to verify against column name
-        $modelInstance          // Model instance
+        'ID',                   // column name from CSV file to match
+        'model_id',             // model ID to verify against column name
+        $modelInstance          // model instance
     );
 
     // Store uploaded file (moving from temp directory into permanent storage)
@@ -63,7 +63,7 @@ public function store(Request $request)
 
     // Chunk file
     $chunkedFiles = $csvie->chunkFiles(
-        $csvie->getStorageDiskPath('uploads') . $fileName
+        $csvie->getStorageDiskPath('uploads').$fileName
     );
 
     // For each chunked file:
@@ -72,15 +72,13 @@ public function store(Request $request)
         $cleanData = $cleaner->scrub($chunkData);               // clean the data,
         $fileCleaned = $csvie->saveCsvFile($chunk, $cleanData); // overwrite changes to the file chunk,
 
-        // then import the file chunk
+        // then import the file chunk!
         if($fileCleaned) {
             $isDataImported = $csvie->importCSV($chunk, $modelInstance);
         }
-
     }
-
-    // Clear out leftover uploaded file along with its chunks
-    $csvie->clearStorageDisk();
+    
+    $csvie->clearStorageDisk(); // clear out leftover uploaded file along with its chunks
 
     // Return view with newly inserted/updated models
     return view('view.index')->with([
