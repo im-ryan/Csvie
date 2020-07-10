@@ -62,9 +62,9 @@ public function store(Request $request)
     $fileName = $request->file->store('/', 'uploads');
 
     // Chunk file
-    $chunkedFiles = $csvie->chunkFiles([
+    $chunkedFiles = $csvie->chunkFiles(
         $csvie->getStorageDiskPath('uploads') . $fileName
-    ]);
+    );
 
     // For each chunked file:
     foreach($chunkedFiles as $chunk) {
