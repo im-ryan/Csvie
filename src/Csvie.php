@@ -565,8 +565,7 @@ class Csvie
         $absPath = self::getStorageDiskPath($this->storageDisk).$filePath;
 
         if (! $storage->exists($filePath)) {
-            $newFile = $this->createNewFile($filePath);
-            $filePath = $newFile->getRealPath();
+            $this->createNewFile($filePath);
         }
 
         // Delete old file and create a new, empty file
