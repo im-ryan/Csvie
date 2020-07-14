@@ -22,6 +22,13 @@ abstract class AbstractCsvieCleaner implements CsvieCleanerContract
     protected $csvUIDs;
 
     /**
+     * Model that will be used for insertion.
+     *
+     * @var array
+     */
+    protected $emptyModel;
+
+    /**
      * Unique identifier used to match database records within the CSV file.
      *
      * @var array
@@ -29,7 +36,7 @@ abstract class AbstractCsvieCleaner implements CsvieCleanerContract
     protected $modelUIDs;
 
     /**
-     * Model used for insertion.
+     * Model that will be searched for in the database.
      *
      * @var mixed
      */
@@ -40,13 +47,17 @@ abstract class AbstractCsvieCleaner implements CsvieCleanerContract
      *
      * @param array|string $csvUIDs
      * @param array|string $modelUIDs
-     * @param mixed  $model
+     * @param mixed        $model
+     * @param mixed        $emptyModelOverride
      */
-    public function __construct($csvUIDs, $modelUIDs, $model)
+    public function __construct($csvUIDs, $modelUIDs, $model, $emptyModelOverride)
     {
         $this->csvUIDs = is_array($csvUIDs)
             ? $csvUIDs
             : [$csvUIDs];
+        $this->emptyModel = (is_null($emptyModelOverride) || empty($emptyModelOverride))
+                ? $model
+                : $emptyModelOverride;
         $this->modelUIDs = is_array($modelUIDs)
             ? $modelUIDs
             : [$modelUIDs];
@@ -105,7 +116,7 @@ abstract class AbstractCsvieCleaner implements CsvieCleanerContract
     public function scrub(\Illuminate\Support\Collection $data): \Illuminate\Support\Collection
     {
         $models = $this->hashDataByUID($data);                         // Hashed data set from database
-        $newModel = self::createEmptyModelArray($this->modelInstance); // Pre-built model skeleton
+        $newModel = self::createEmptyModelArray($this->emptyModel);    // Pre-built model skeleton
         $date = now();                                                 // Pre-made carbon date instance
         $csvUids = self::buildEmptyArray($this->csvUIDs);              // Pre-built array keys for getHashKey()
 
