@@ -571,12 +571,14 @@ class Csvie
         // Delete old file and create a new, empty file
         $storage->delete($filePath);
         $storage->put($filePath, '');
+        
+        if ($content->isNotEmpty()) {
+            $csvWriter = Writer::createFromPath($absPath);
+            $headers = array_keys($content->get(0));
 
-        $csvWriter = Writer::createFromPath($absPath);
-        $headers = array_keys($content->get(0));
-
-        $csvWriter->insertOne($headers);
-        $csvWriter->insertAll($content->all());
+            $csvWriter->insertOne($headers);
+            $csvWriter->insertAll($content->all());
+        }
 
         return $filePath;
     }
