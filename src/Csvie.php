@@ -83,6 +83,13 @@ class Csvie
     protected $iniInitialSetting;
 
     /**
+     * Whether duplicate rows should be replaced or ignored.
+     *
+     * @var bool
+     */
+    protected $replaceDuplicates;
+
+    /**
      * The Laravel disk where uploaded files are stored. This will also be where chunked files are stored.
      *
      * @var string
@@ -127,6 +134,10 @@ class Csvie
         $this->hasMacSupport = array_key_exists('file_macsupport', $options)
             ? $options['file_macsupport']
             : config('csvie.file_macsupport');
+            
+        $this->replaceDuplicates = array_key_exists('replace_duplicates', $options)
+            ? $options['replace_duplicates']
+            : config('csvie.replace_duplicates');
             
         $this->storageDisk = array_key_exists('disk', $options)
             ? $options['storage_disk']
@@ -427,6 +438,16 @@ class Csvie
     {
         return $this->storageDisk;
     }
+    
+    /**
+     * Gets whether or not to replace duplicates.
+     *
+     * @return bool
+     */
+    public function getReplaceDuplicates(): bool
+    {
+        return $this->replaceDuplicates;
+    }
 
     /**
      * Imports a CSV file into the database, using a model as a reference. Returns true if all records were successfully inserted.
@@ -441,12 +462,16 @@ class Csvie
         $table = (gettype($model) == 'string')
             ? $model
             : $model->getTable();
+        
         $fileCharSet = $this->fileCharSet;
         $fileEnclosedBy = $this->fileEnclosedBy;
         $fileEscapedBy = $this->fileEscapedBy;
         $fileIgnoredLines = $this->fileIgnoredLines;
         $fileLinesTerminatedBy = $this->fileLinesTerminatedBy;
         $fileTerminatedBy = $this->fileTerminatedBy;
+        $replaceDuplicates = $this->replaceDuplicates
+            ? 'REPLACE'
+            : 'IGNORE';
 
         // Get number of rows in CSV file without loading contents into memory
         $file = new \SplFileObject($filePath, 'r');
@@ -454,7 +479,7 @@ class Csvie
         $numRowsOfData = $file->key() - 1; // Get the highest row, excluding header row
 
         $query = "LOAD DATA LOCAL INFILE '${filePath}'
-            INTO TABLE ${table}
+            ${replaceDuplicates} INTO TABLE ${table}
                 CHARACTER SET ${fileCharSet}
                 FIELDS
                     TERMINATED by '${fileTerminatedBy}'
@@ -592,6 +617,17 @@ class Csvie
     public function setFileChunkSize(int $fileChunkSize): void
     {
         $this->fileChunkSize = $fileChunkSize;
+    }
+    
+    /**
+     * Sets whether or not to replace duplicates.
+     *
+     * @param  bool $replaceDuplicates
+     * @return void
+     */
+    public function setReplaceDuplicates(bool $replaceDuplicates): void
+    {
+        $this->replaceDuplicates = $replaceDuplicates;
     }
 
     /**

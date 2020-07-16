@@ -32,6 +32,7 @@ return [
     | 'file_lines_ignored'        => 1          // The number of lines to ignore. Usually to ignore the header line.
     | 'file_lines_terminatedby'   => '\n'       // Character that marks the end of a line.
     | 'file_macsupport'           => false      // Whether or not to support CSV files created by or uploaded by a Mac.
+    | 'replace_duplicates'        => true       // When a duplicate row is found, should it be replaced with incoming data, or ignored?
     |
     */
 
@@ -43,4 +44,5 @@ return [
     'file_lines_ignored'       => 1,
     'file_lines_terminatedby'  => '\n',
     'file_macsupport'          => false,
+    'replace_duplicates'       => true,
 ];
