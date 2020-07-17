@@ -47,15 +47,17 @@ $ php artisan config:cache
 ``` php
 public function store(Request $request)
 {
-    $csvie = new Csvie;         // note: you can pass an array of config overrides if needed
+    $csvie = new Csvie; // note: you can pass an array of config overrides if needed
     $modelInstance = new Model;
+    $referenceData = 'Whatever I want'; // note: reference data is optional
 
     // Initiate custom cleaner based on AbstractCsvieCleaner
     // Note: You can pass an array for both column and model UIDs if you need to verify against multiple columns
     $cleaner = new ModelCleaner(
         'ID',                   // column name from CSV file to match
         'model_id',             // model ID to verify against column name
-        $modelInstance          // model instance
+        $modelInstance,
+        $referenceData  
     );
 
     // Store uploaded file (moving from temp directory into permanent storage)
@@ -108,14 +110,15 @@ class ModelCleaner extends AbstractCsvieCleaner
 {
     /**
      * Custom made function used to clean CSV data.
-     * 
-     * @param  array                      $rowData     - The current row of data pulled from your CSV.
-     * @param  mixed                      $foundModels - Matched model(s) based on your CSV, otherwise contains null.
-     * @param  array                      $newModel    - An empty model indexed with appropriate keys based on your model.
-     * @param  \Illuminate\Support\Carbon $date        - The current date used for timestamps.
+     *
+     * @param  array                      $rowData      - The current row of data pulled from your CSV.
+     * @param  mixed                      $foundModels  - Matched model(s) based on your CSV, otherwise contains null.
+     * @param  array                      $newModel     - An empty model indexed with appropriate keys based on your model.
+     * @param  \Illuminate\Support\Carbon $date         - The current date used for timestamps.
+     * @param  mixed                      $optionalData - Any custom data that you want to reference in the scrubber.
      * @return array|null
      */
-    abstract protected function scrubber(array $rowData, $foundModels, array $newModel, \Illuminate\Support\Carbon $date)
+    protected function scrubber(array $rowData, $foundModels, array $newModel, \Illuminate\Support\Carbon $date, $optionalData)
     {
         // Run checks on $rowData here. Validate, cleanse or completely change!
             // Use parent::updateValue() if you have many possible ways to update a single value within $rowData. Check the function for more information.

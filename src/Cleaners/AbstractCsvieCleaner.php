@@ -43,14 +43,22 @@ abstract class AbstractCsvieCleaner implements CsvieCleanerContract
     protected $modelInstance;
 
     /**
+     * Optional data that can be passed directly to the scrubber.
+     *
+     * @var mixed
+     */
+    protected $optionalData;
+
+    /**
      * Initializes a new cleaner class.
      *
      * @param array|string $csvUIDs
      * @param array|string $modelUIDs
      * @param mixed        $model
      * @param mixed        $emptyModelOverride
+     * @param mixed        $optionalData       = null
      */
-    public function __construct($csvUIDs, $modelUIDs, $model, $emptyModelOverride)
+    public function __construct($csvUIDs, $modelUIDs, $model, $emptyModelOverride, $optionalData = null)
     {
         $this->csvUIDs = is_array($csvUIDs)
             ? $csvUIDs
@@ -62,6 +70,7 @@ abstract class AbstractCsvieCleaner implements CsvieCleanerContract
             ? $modelUIDs
             : [$modelUIDs];
         $this->modelInstance = $model;
+        $this->optionalData = $optionalData;
     }
 
     /**
@@ -119,15 +128,16 @@ abstract class AbstractCsvieCleaner implements CsvieCleanerContract
         $newModel = self::createEmptyModelArray($this->emptyModel);    // Pre-built model skeleton
         $date = now();                                                 // Pre-made carbon date instance
         $csvUids = self::buildEmptyArray($this->csvUIDs);              // Pre-built array keys for getHashKey()
+        $optionalData = $this->optionalData;
 
         // Filter the CSV file
-        $data = $data->filterMap(function ($row) use ($models, $newModel, $date, $csvUids) {
+        $data = $data->filterMap(function ($row) use ($models, $newModel, $date, $csvUids, $optionalData) {
             $key = $this->getHashKey($row, $csvUids);
             $foundModels = $models->has($key)
                 ? $models->get($key)
                 : null;
 
-            return $this->scrubber($row, $foundModels, $newModel, $date);
+            return $this->scrubber($row, $foundModels, $newModel, $date, $optionalData);
         });
 
         return $data;
@@ -136,13 +146,14 @@ abstract class AbstractCsvieCleaner implements CsvieCleanerContract
     /**
      * Custom made function used to clean CSV data.
      *
-     * @param  array                      $rowData     - The current row of data pulled from your CSV.
-     * @param  mixed                      $foundModels - Matched model(s) based on your CSV, otherwise contains null.
-     * @param  array                      $newModel    - An empty model indexed with appropriate keys based on your model.
-     * @param  \Illuminate\Support\Carbon $date        - The current date used for timestamps.
+     * @param  array                      $rowData      - The current row of data pulled from your CSV.
+     * @param  mixed                      $foundModels  - Matched model(s) based on your CSV, otherwise contains null.
+     * @param  array                      $newModel     - An empty model indexed with appropriate keys based on your model.
+     * @param  \Illuminate\Support\Carbon $date         - The current date used for timestamps.
+     * @param  mixed                      $optionalData - Any custom data that you want to reference in the scrubber.
      * @return array|null
      */
-    abstract protected function scrubber(array $rowData, $foundModels, array $newModel, \Illuminate\Support\Carbon $date);
+    abstract protected function scrubber(array $rowData, $foundModels, array $newModel, \Illuminate\Support\Carbon $date, $optionalData);
 
     /**
      * Updates the current value with the first non-null value found between the new value and other possible values, unless the current value is overridden, in which case, this returns the current value.
