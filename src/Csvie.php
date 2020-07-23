@@ -599,7 +599,7 @@ class Csvie
         
         if ($content->isNotEmpty()) {
             $csvWriter = Writer::createFromPath($absPath);
-            $headers = array_keys($content->get(0));
+            $headers = array_keys($content->first());
 
             $csvWriter->insertOne($headers);
             $csvWriter->insertAll($content->all());
