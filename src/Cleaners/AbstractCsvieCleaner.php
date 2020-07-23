@@ -138,7 +138,7 @@ abstract class AbstractCsvieCleaner implements CsvieCleanerContract
                 : null;
 
             return $this->scrubber($row, $foundModels, $newModel, $date, $optionalData);
-        });
+        })->values(); // re-index values from 0
 
         return $data;
     }
