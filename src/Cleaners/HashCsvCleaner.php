@@ -141,7 +141,9 @@ abstract class HashCsvCleaner implements CsvieCleanerContract
                 : null;
 
             return $this->scrubber($row, $foundModels, $newModel, $date, $optionalData);
-        })->values(); // re-index values from 0
+        })
+        ->unique()  // remove any duplicate rows
+        ->values(); // re-index values from 0
 
         return $data;
     }
