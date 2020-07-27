@@ -9,11 +9,11 @@ use Rhuett\Csvie\Contracts\CsvieCleaner as CsvieCleanerContract;
 use Rhuett\Csvie\Traits\CsvieHelpers;
 
 /**
- * Class AbstractCsvieCleaner.
+ * Class HashCsvieCleaner.
  *
  * An abstract CsvieCleaner implementation using a hashing method to quickly search through found models matched from a CSV file. This implementation relies on the abstract scrubber function to be able to clean different CSV files.
  */
-abstract class AbstractCsvieCleaner implements CsvieCleanerContract
+abstract class HashCsvCleaner implements CsvieCleanerContract
 {
     use CsvieHelpers;
 
