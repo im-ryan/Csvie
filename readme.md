@@ -47,42 +47,32 @@ $ php artisan config:cache
 ``` php
 public function store(Request $request)
 {
-    $csvie = new Csvie; // note: you can pass an array of config overrides if needed
+    $csvie = new Csvie;                 // note: you can pass an array of config overrides if needed
     $modelInstance = new Model;
     $referenceData = 'Whatever I want'; // note: reference data is optional
 
-    // Initiate custom cleaner based on AbstractCsvieCleaner
     // Note: You can pass an array for both column and model UIDs if you need to verify against multiple columns
     $cleaner = new ModelCleaner(
-        'ID',                   // column name from CSV file to match
-        'model_id',             // model ID to verify against column name
+        'ID',           // column name from CSV file to match
+        'model_id',     // model ID to verify against column name
         $modelInstance,
         $referenceData  
     );
-
-    // Store uploaded file (moving from temp directory into permanent storage)
-    $fileName = $request->file->store('/', 'uploads');
-
-    // Chunk file
+    
+    $fileName = $request->file->store('/', 'uploads'); // move uploaded file from /temp into permanent storage
     $chunkedFiles = $csvie->chunkFiles(
         $csvie->getStorageDiskPath('uploads').$fileName
     );
 
-    // For each chunked file:
     foreach($chunkedFiles as $chunk) {
-        $chunkData = $csvie->readCsvFile($chunk);               // read data from the file chunk,
-        $cleanData = $cleaner->scrub($chunkData);               // clean the data,
-        $fileCleaned = $csvie->saveCsvFile($chunk, $cleanData); // overwrite changes to the file chunk,
+        $chunkData = $csvie->readCsvFile($chunk);
+        $cleanData = $cleaner->scrub($chunkData);
+        $cleanFile = $csvie->saveCsvFile($chunk, $cleanData);
 
-        // then import the file chunk!
-        if($fileCleaned) {
-            $isDataImported = $csvie->importCSV($chunk, $modelInstance);
-        }
+        $csvie->importCSV($cleanFile, $modelInstance);
     }
-    
     $csvie->clearStorageDisk(); // clear out leftover uploaded file along with its chunks
 
-    // Return view with newly inserted/updated models
     return view('view.index')->with([
         'models' => Model::all()
     ]);
