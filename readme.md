@@ -108,6 +108,11 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Rhuett\Csvie\Cleaners\HashCsvCleaner;
 
+/**
+ * Class ModelCleaner.
+ * 
+ * An abstract CsvieCleaner implementation using a custom scrubbing technique based on your needs.
+ */
 class ModelCleaner extends HashCsvCleaner
 {
     /**
@@ -161,11 +166,9 @@ use Rhuett\Csvie\Contracts\CsvieCleaner as CsvieCleanerContract;
 use Rhuett\Csvie\Traits\CsvieHelpers;
 
 /**
- * Class MyCsvieCleaner.
+ * Class MyCsvCleaner.
  * 
  * An abstract CsvieCleaner implementation using a custom scrubbing technique based on your needs.
- *
- * @package namespace App\Services\Cleaners;
  */
 abstract class MyCsvCleaner implements CsvieCleanerContract
 {
