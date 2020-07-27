@@ -10,7 +10,7 @@ Csvie is meant to quickly load CSV files with more than a few thousand rows of d
 1. You upload the CSV files onto your server.
 2. Use Csvie to chunk the files into smaller pieces. Chunking will be done by rows of data, instead of file globs.
 3. Write a custom CSV scrubber to clean data from the chunked files, then overwrite these files on the server.
-   1. Note that you do not have to use the included AbstractCsvieCleaner implementation. You are free to write your own using the Rhuett\Csvie\Contracts\CsvieCleaner interface.
+   1. Note that you do not have to use the included HashCsvCleaner implementation. You are free to write your own using the Rhuett\Csvie\Contracts\CsvieCleaner interface.
 4. Directly load the clean files into your MySQL database directly using the [Load Data statement](https://dev.mysql.com/doc/refman/8.0/en/load-data.html).
 
 ## Installation
@@ -104,21 +104,23 @@ $ php artisan make:cleaner ModelNameCleaner
  
 namespace App\Services\CsvCleaners;
 
-use Rhuett\Csvie\Cleaners\AbstractCsvieCleaner;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use Rhuett\Csvie\Cleaners\HashCsvCleaner;
 
-class ModelCleaner extends AbstractCsvieCleaner
+class ModelCleaner extends HashCsvCleaner
 {
     /**
      * Custom made function used to clean CSV data.
      *
-     * @param  array                      $rowData      - The current row of data pulled from your CSV.
-     * @param  mixed                      $foundModels  - Matched model(s) based on your CSV, otherwise contains null.
-     * @param  array                      $newModel     - An empty model indexed with appropriate keys based on your model.
-     * @param  \Illuminate\Support\Carbon $date         - The current date used for timestamps.
-     * @param  mixed                      $optionalData - Any custom data that you want to reference in the scrubber.
+     * @param  array                           $rowData      - The current row of data pulled from your CSV.
+     * @param  ?\Illuminate\Support\Collection $foundModels  - Matched model(s) based on your CSV, otherwise contains null.
+     * @param  array                           $newModel     - An empty model indexed with appropriate keys based on your model.
+     * @param  \Illuminate\Support\Carbon      $date         - The current date used for timestamps.
+     * @param  mixed                           $optionalData - Any custom data that you want to reference in the scrubber.
      * @return array|null
      */
-    protected function scrubber(array $rowData, $foundModels, array $newModel, \Illuminate\Support\Carbon $date, $optionalData)
+    protected function scrubber(array $rowData, ?Collection $foundModels, array $newModel, Carbon $date, $optionalData)
     {
         // Run checks on $rowData here. Validate, cleanse or completely change!
             // Use parent::updateValue() if you have many possible ways to update a single value within $rowData. Check the function for more information.
@@ -154,6 +156,7 @@ If you want a completely custom CSV Cleaner, then you can make your own implemen
 
 
 ```php
+use Illuminate\Support\Collection;
 use Rhuett\Csvie\Contracts\CsvieCleaner as CsvieCleanerContract;
 use Rhuett\Csvie\Traits\CsvieHelpers;
 
@@ -164,7 +167,7 @@ use Rhuett\Csvie\Traits\CsvieHelpers;
  *
  * @package namespace App\Services\Cleaners;
  */
-abstract class MyCsvieCleaner implements CsvieCleanerContract
+abstract class MyCsvCleaner implements CsvieCleanerContract
 {
     use CsvieHelpers;   // Not needed, review trait to see if it will help you.
 
@@ -174,7 +177,7 @@ abstract class MyCsvieCleaner implements CsvieCleanerContract
      * @param  \Illuminate\Support\Collection $data
      * @return \Illuminate\Support\Collection
      */
-    public function scrub(\Illuminate\Support\Collection $data): \Illuminate\Support\Collection
+    public function scrub(Collection $data): Collection
     {
         // Clean all the data
     }
