@@ -2,6 +2,9 @@
 
 namespace Rhuett\Csvie\Cleaners;
 
+use Illuminate\Database\Eloquent\Collection as DatabaseCollection;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Rhuett\Csvie\Contracts\CsvieCleaner as CsvieCleanerContract;
 use Rhuett\Csvie\Traits\CsvieHelpers;
 
@@ -95,7 +98,7 @@ abstract class AbstractCsvieCleaner implements CsvieCleanerContract
      * @param  \Illuminate\Support\Collection           $data
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    private function hashDataByUID(\Illuminate\Support\Collection $data): \Illuminate\Database\Eloquent\Collection
+    private function hashDataByUID(Collection $data): DatabaseCollection
     {
         $csvUids = $this->csvUIDs;
         $modelUids = $this->modelUIDs;
@@ -122,7 +125,7 @@ abstract class AbstractCsvieCleaner implements CsvieCleanerContract
             });
     }
 
-    public function scrub(\Illuminate\Support\Collection $data): \Illuminate\Support\Collection
+    public function scrub(Collection $data): Collection
     {
         $models = $this->hashDataByUID($data);                         // Hashed data set from database
         $newModel = self::createEmptyModelArray($this->emptyModel);    // Pre-built model skeleton
@@ -146,14 +149,14 @@ abstract class AbstractCsvieCleaner implements CsvieCleanerContract
     /**
      * Custom made function used to clean CSV data.
      *
-     * @param  array                      $rowData      - The current row of data pulled from your CSV.
-     * @param  mixed                      $foundModels  - Matched model(s) based on your CSV, otherwise contains null.
-     * @param  array                      $newModel     - An empty model indexed with appropriate keys based on your model.
-     * @param  \Illuminate\Support\Carbon $date         - The current date used for timestamps.
-     * @param  mixed                      $optionalData - Any custom data that you want to reference in the scrubber.
+     * @param  array                           $rowData      - The current row of data pulled from your CSV.
+     * @param  ?\Illuminate\Support\Collection $foundModels  - Matched model(s) based on your CSV, otherwise contains null.
+     * @param  array                           $newModel     - An empty model indexed with appropriate keys based on your model.
+     * @param  \Illuminate\Support\Carbon      $date         - The current date used for timestamps.
+     * @param  mixed                           $optionalData - Any custom data that you want to reference in the scrubber.
      * @return array|null
      */
-    abstract protected function scrubber(array $rowData, $foundModels, array $newModel, \Illuminate\Support\Carbon $date, $optionalData);
+    abstract protected function scrubber(array $rowData, ?Collection $foundModels, array $newModel, Carbon $date, $optionalData);
 
     /**
      * Updates the current value with the first non-null value found between the new value and other possible values, unless the current value is overridden, in which case, this returns the current value.
