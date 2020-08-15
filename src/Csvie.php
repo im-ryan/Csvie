@@ -316,8 +316,11 @@ class Csvie
         // Export all wanted database tables
         foreach ($tables as $table) {
             $file = $this->exportModelToCSV($table, $filepath);
-            $zip->addFile($file, basename($file));
-            array_push($scrapFiles, $file);
+            
+            if (!is_null($file)) {
+                $zip->addFile($file, basename($file));
+                array_push($scrapFiles, $file);
+            }
         }
         $zip->close(); // zip file written to memory, can now delete leftover files
 
@@ -335,11 +338,18 @@ class Csvie
      * @param  mixed  $model
      * @param  string $filePath = null
      * @param  string $disk     = null
-     * @return string
+     * @return ?string
      */
-    public function exportModelToCSV($model, string $filePath = null): string
+    public function exportModelToCSV($model, string $filePath = null): ?string
     {
-        $table = (gettype($model) === 'string') ? $model : $model->getTable();
+        $table = (gettype($model) === 'string')
+            ? $model
+            : $model->getTable();
+            
+        if (DB::select("SELECT count(*) as count FROM ${table}")[0]->count == 0) {
+            return null;
+        }
+        
         $cols = Schema::getColumnListing($table);
         $rows = DB::select("SELECT * FROM ${table}");
         $file = $this->createNewFile($filePath, "${table}.csv");
@@ -566,7 +576,9 @@ class Csvie
         $table = $pathInfo['filename'];
 
         if (in_array($table, self::getDbTableNames())) {
+            Schema::disableForeignKeyConstraints();
             DB::table($table)->truncate();
+            Schema::enableForeignKeyConstraints();
 
             $fileName = $dirName.'/'.$pathInfo['basename'];
 
