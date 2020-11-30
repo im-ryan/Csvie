@@ -350,7 +350,7 @@ class Csvie
             return null;
         }
         
-        $cols = Schema::getColumnListing($table);
+        $cols = $this->getColumnListing($table);
         $rows = DB::select("SELECT * FROM ${table}");
         $file = $this->createNewFile($filePath, "${table}.csv");
 
@@ -374,7 +374,7 @@ class Csvie
      */
     protected function generateMysqlEmptyStringOverwrite(string $tableName): string
     {
-        $columns = Schema::getColumnListing($tableName);
+        $columns = $this->getColumnListing($tableName);
         $columnLength = count($columns) - 1;
         $columnHeaders = '(';
         $nullOverwrite = ' SET ';
@@ -417,6 +417,21 @@ class Csvie
         }
 
         return $uniqueHeaders;
+    }
+
+    /**
+     * Replacement for Schema::getColumnListing(). In this case, the columns are not alphabetized.
+     *
+     * @param  string $table
+     * @return array
+     */
+    public function getColumnListing(string $table): array
+    {
+        return array_keys(
+            Schema::getConnection()
+                ->getDoctrineSchemaManager()
+                ->listTableColumns($table)
+        );
     }
 
     /**
