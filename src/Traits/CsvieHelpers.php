@@ -3,7 +3,6 @@
 namespace Rhuett\Csvie\Traits;
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use League\Csv\Reader;
@@ -90,11 +89,16 @@ trait CsvieHelpers
      * Returns the list of column names for a given table.
      *
      * @param  string $table
+     * @param  string $connection = null
      * @return array
      */
-    public static function getTableCols(string $table): array
+    public static function getTableCols(string $table, string $connection = null): array
     {
-        return Schema::getColumnListing($table);
+        return array_keys(
+            DB::connection($connection)
+                ->getDoctrineSchemaManager()
+                ->listTableColumns($table)
+        );
     }
 
     /**
