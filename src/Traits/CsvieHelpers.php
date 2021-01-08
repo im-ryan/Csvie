@@ -2,7 +2,7 @@
 
 namespace Rhuett\Csvie\Traits;
 
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use League\Csv\Reader;
@@ -53,12 +53,11 @@ trait CsvieHelpers
     /**
      * Returns the list of table names within a given connection.
      *
-     * @param  string $connection = null
      * @return array
      */
-    public static function getDbTableNames(string $connection = null): array
+    public static function getDbTableNames(): array
     {
-        return DB::connection($connection)
+        return Schema::getConnection()
             ->getDoctrineSchemaManager()
             ->listTableNames();
     }
@@ -89,13 +88,12 @@ trait CsvieHelpers
      * Returns the list of column names for a given table.
      *
      * @param  string $table
-     * @param  string $connection = null
      * @return array
      */
-    public static function getTableCols(string $table, string $connection = null): array
+    public static function getTableCols(string $table): array
     {
         return array_keys(
-            DB::connection($connection)
+            Schema::getConnection()
                 ->getDoctrineSchemaManager()
                 ->listTableColumns($table)
         );
