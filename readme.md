@@ -32,10 +32,26 @@ Make sure to add the following line to your app/config/database.php file:
     ]) : [],
 ],
 ```
+
 Once you have finished these configuration changes, don't forget to run:
 
 ``` bash
 $ php artisan config:cache
+```
+
+Note that if you are getting errors about this not being enabled on both the client and server side, then you may also need to edit mysql.cnf:
+
+```
+# File Location: /etc/mysql/mysql.conf.d/mysql.cnf
+# Add the following to the bottom of the file:
+[server]
+local_infile=true
+```
+
+...and run:
+
+``` bash
+$ sudo systemctl restart mysql
 ```
 
 ## Usage
